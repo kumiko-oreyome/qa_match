@@ -6,13 +6,17 @@ import random
 import csv
 from  model.eval import  accuracy,match_all,Evaluator
 from common.datautil import QAMatchDataset,QAEvaluateDataset
+from model.learn import  MatchLearner
+from torch.optim import SGD
+from model.learn import Checkpoint
 
 train_dataset = QAMatchDataset('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_candidates.txt')
-dataloader = DataLoader(train_dataset, batch_size=32,shuffle=False)
-simplecnn = SimpleCNN(train_dataset.vocab,100,[(2,500),(3,500),(4,500)])
+train_loader = DataLoader(train_dataset, batch_size=32,shuffle=False)
+simplecnn = SimpleCNN(train_dataset.vocab,100,[(2,10),(3,10),(4,10)])
 vocab = train_dataset.vocab
 eval_dataset = QAEvaluateDataset('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_fake_eval.csv',vocab)
 eval_loader = DataLoader(eval_dataset , batch_size=32,shuffle=False)
+optimizer = SGD(simplecnn.parameters(), lr = 0.01, momentum=0.9)
 
 def test_match_all():
     d = match_all(simplecnn,eval_loader)
@@ -22,10 +26,17 @@ def test_evaulator():
     d = match_all(simplecnn,eval_loader)
     e = Evaluator('./data/cMedQA2/small_fake_eval.csv').evaluate_accuracy(d)
 
+def test_train():
+    leaner = MatchLearner(simplecnn,optimizer)
+    checkpoint = Checkpoint('./checkpoints/small',simplecnn,vocab)
+    eva = Evaluator('./data/cMedQA2/small_fake_eval.csv')
+    leaner.train(train_loader,eval_loader,checkpoint,eva)
+    
 
 
+test_train()
 #test_match_all()
-test_evaulator()
+#test_evaulator()
 
 
 

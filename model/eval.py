@@ -51,7 +51,7 @@ def cosine_similarity(q_vectors,a_vectors):
 
 
 def embedding_loss(pos_sims,neg_sims,M=0.2):
-    diff = M-pos_sims-neg_sims
+    diff = M-pos_sims+neg_sims
     _loss = torch.clamp(diff, min=0)
     return torch.mean(_loss)
 

@@ -8,12 +8,20 @@ class SimpleCNN(nn.Module):
     # kernel_sizes : tuple of kernel_size and numbers [(3,5)] means 5  of 3*emb_dim kernels
     def __init__(self,vocab,emb_dim,kernel_sizes): 
         super(SimpleCNN, self).__init__()
+
+        self.emb_dim = emb_dim
+        self.kernel_sizes = kernel_sizes
+
         self.emb = nn.Embedding(vocab.size(),emb_dim, padding_idx=vocab._encode_one(vocab.PAD))
         nn.init.uniform_(self.emb.weight, -0.001, 0.001)
         self.conv_layers = []
         for kernel_size,kernel_number in kernel_sizes:
             conv = nn.Conv2d(1, kernel_number, ( kernel_size,emb_dim))
             self.conv_layers.append(conv)
+
+
+    def get_hypers(self):
+        return {'emb_dim':self.emb_dim,'kernel_sizes':self.kernel_sizes}
 
 
     def forward_question(self,question_batch):

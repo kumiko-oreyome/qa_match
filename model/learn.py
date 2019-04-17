@@ -1,47 +1,58 @@
 
-from eval import cosine_similarity,embedding_loss,match_all
+from model.eval import cosine_similarity,embedding_loss,match_all
 import torch
 import pandas as pd
+from common.datautil import Vocab
+import os
 
 
 
 
+class Checkpoint():
+    def __init__(self,dirpath,model=None,vocab=None):
+        self.dirpath = dirpath
+        self.model = model
+        self.vocab = vocab
+        self.first_save = False
+        self.vocab_path = '%s/vocab'%(self.dirpath)
 
 
-#optimizer = optim.SGD(model.parameters(), lr = 0.01, momentum=0.9)
+        print('checkpont: %s'%(dirpath))
+        if not os.path.exists(dirpath):
+            os.makedirs(dirpath)
 
+    def save(self,prefix,**kwargs):
+        if  self.first_save:
+            self.first_save = True
+            self.vocab.save(self.vocab_path)
+        d = {
+            'model': self.model.state_dict(),
+            'model_hyper':  self.model.get_hypers()
+            #'optimizer': self.opt.state_dict()
+            }
+        d.update(kwargs)
+        torch.save(d, '%s/%s.ckpt'%(self.dirpath,prefix))
 
-#class QAMatcher():
-#    def __init__(self,model):
-#        self.model = model
-#        self.result = {}
-#    def reset(self):
-#        self.result = {}
-#    
-#    def add_match_result(self,sim,batch_qid,batch_ansid):
+    def load(self,ckpt_path,model_cls):
+        self.vocab = Vocab.load(self.vocab_path)
+        checkpoint = torch.load(ckpt_path)
+        self.model  = model_cls(**checkpoint['model_hyper']) 
+        self.model.load_state_dict(checkpoint['model'])
 
-
+    
 class MatchLearner():
-    def __init__(self,model,optmizer,metric,validate_every=5,save_every=5):
+    def __init__(self,model,optmizer):
         self.model = model
         self.optm = optmizer
+ 
 
-        self.validate_every = validate_every
-        self.save_every = save_every
-        
-
-    def validate(self,validate_loader): 
-        for batch in validate_loader:
-            qv = self.model.forward_question(batch['q'])
-            av = self.model.forward_answer(batch['ans'])
-            sim = cosine_similarity(qv,av)
-
-
-    def train(self,train_loader,validate_loader,evaluator,max_epoch=100):
-        best_model = None
+    def train(self,train_loader,validate_loader,ckpt,evaluator,max_epoch=100,validate_every=5,save_every=5):
+        best_epoch = 0
         best_accu = 0.0
+        dirty_flag = False
         for epoch in range(max_epoch):
             loss_tot = 0.0
+            cnt = 0
             print('epoch %d'%(epoch))
             for i,batch in enumerate(train_loader):
                 self.optm.zero_grad()
@@ -51,26 +62,25 @@ class MatchLearner():
                 sim_p = cosine_similarity(qv,pav)
                 sim_n = cosine_similarity(qv,nav)
                 loss = embedding_loss(sim_p,sim_n)
-                loss_tot+=loss
                 loss.backward()
                 self.optm.step()
+                loss_tot+=loss
+                cnt+=1
+            print('training loss %.3f'%(loss_tot/cnt))
 
-            if epoch % self.validate_every == 0:
+            if epoch % validate_every == 0:
+                print('validate')
                 pred = match_all(self.model,validate_loader)
-                evaluator.evaluate_accuracy(pred)
-                
-            if epoch % self.save_every == 0 :
-                pass
+                accu = evaluator.evaluate_accuracy(pred)
+                print('accuracy : %.3f'%(accu))
+                if accu > best_accu:
+                    best_accu = accu
+                    best_epoch = epoch
+                    dirty_flag = True
+                    
 
-
-
-
-
-    def epoch_complete(self):
-        pass
-
-    def iteration_complete(self):
-        pass
-
-
-    
+            if epoch % save_every == 0 :
+               ckpt.save(str(epoch),epoch=epoch)
+               if dirty_flag:
+                   ckpt.save('best',epoch=best_epoch)
+                   dirty_flag = False

@@ -8,10 +8,11 @@ import torch
 import random
 import csv
 from  model.eval import  accuracy,match_all
-#import itertools
-# for test
-def generate_match_file():
-    pass
+import  pickle as pkl
+
+
+
+
 
 
 
@@ -60,8 +61,6 @@ class Text():
     def to_tensor(self,vocab):
         return np.array(self.numerize(vocab),dtype=np.int64)
 
-
-
 class Vocab():
     def __init__(self):
         self.ix2token = []
@@ -103,14 +102,16 @@ class Vocab():
             return "".join(tokens)
         return tokens
 
+    def save(self,path):
+        with open(path,'wb') as f:
+            pkl.dump(self,path)
 
-
-
+    @classmethod
+    def load(cls,path):
+        with open(path,'rb') as f:
+            return pkl.load(f)
+        
     
-
-
-
-
 
 class QAEvaluateDataset(Dataset):
     def __init__(self,question_file,answer_file,eval_file,vocab,max_sentence_len=100,tokenizer=list,device=None):
@@ -170,7 +171,6 @@ class QAMatchDataset(Dataset):
         return len(self.sample_df)
     def _text2array(self,s):
         return Text(s,self.max_sentence_len,self.tokenizer).to_tensor(self.vocab)
-
     def __getitem__(self, idx):
         row = self.sample_df.iloc[idx]
         q,pa,na = self._get_items_from_sample_row(row)
