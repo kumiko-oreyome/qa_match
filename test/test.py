@@ -31,10 +31,14 @@ def test_train():
     checkpoint = Checkpoint('./checkpoints/small',simplecnn,vocab)
     eva = Evaluator('./data/cMedQA2/small_fake_eval.csv')
     leaner.train(train_loader,eval_loader,checkpoint,eva)
+
+def test_reload():
+    checkpoint = Checkpoint('./checkpoints/small')
+    checkpoint.load('best', SimpleCNN)
     
 
-
-test_train()
+test_reload()
+#test_train()
 #test_match_all()
 #test_evaulator()
 

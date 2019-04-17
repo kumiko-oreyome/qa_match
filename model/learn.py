@@ -13,7 +13,7 @@ class Checkpoint():
         self.dirpath = dirpath
         self.model = model
         self.vocab = vocab
-        self.first_save = False
+        self.first_save = True
         self.vocab_path = '%s/vocab'%(self.dirpath)
 
 
@@ -33,10 +33,10 @@ class Checkpoint():
         d.update(kwargs)
         torch.save(d, '%s/%s.ckpt'%(self.dirpath,prefix))
 
-    def load(self,ckpt_path,model_cls):
+    def load(self,prefix,model_cls):
         self.vocab = Vocab.load(self.vocab_path)
-        checkpoint = torch.load(ckpt_path)
-        self.model  = model_cls(**checkpoint['model_hyper']) 
+        checkpoint = torch.load('%s/%s.ckpt'%(self.dirpath,prefix))
+        self.model  = model_cls(vocab=self.vocab,**checkpoint['model_hyper']) 
         self.model.load_state_dict(checkpoint['model'])
 
     

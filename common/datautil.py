@@ -104,7 +104,7 @@ class Vocab():
 
     def save(self,path):
         with open(path,'wb') as f:
-            pkl.dump(self,path)
+            pkl.dump(self,f)
 
     @classmethod
     def load(cls,path):
