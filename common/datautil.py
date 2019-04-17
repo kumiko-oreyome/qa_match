@@ -7,7 +7,7 @@ from model.simplecnn import SimpleCNN
 import torch
 import random
 import csv
-from  model.eval import  accuracy
+from  model.eval import  accuracy,match_all
 #import itertools
 # for test
 def generate_match_file():
@@ -128,16 +128,16 @@ class QAEvaluateDataset(Dataset):
     def _get_items_from_sample_row(self,row):
         q = self.question_df.loc[row['question_id'],'content']
         a = self.answer_df.loc[row['ans_id'],'content']
-        return q,a,row['label'],row['question_id']
+        return q,a,row['label'],row['question_id'],row['ans_id']
 
     def _text2array(self,s):
         return Text(s,self.max_sentence_len,self.tokenizer).to_tensor(self.vocab)
 
     def __getitem__(self, idx):
         row = self.sample_df.iloc[idx]
-        q,a,label,question_id = self._get_items_from_sample_row(row)
+        q,a,label,question_id,ans_id = self._get_items_from_sample_row(row)
         return {'q':  self._text2array(q),'ans': self._text2array(a),'label':np.array(int(label),dtype=np.int32)\
-                ,'question_id':np.array(int(question_id),dtype=np.int64)}
+                ,'question_id':np.array(int(question_id),dtype=np.int64),'ans_id':np.array(int(ans_id),dtype=np.int64)}
 
 
 class QAMatchDataset(Dataset):
@@ -185,7 +185,7 @@ class QAMatchDataset(Dataset):
 
 
 
-train_dataset = QAMatchDataset('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_candidates.txt')
+#train_dataset = QAMatchDataset('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_candidates.txt')
 #dataloader = DataLoader(train_dataset, batch_size=32,shuffle=False)
 #simplecnn = SimpleCNN(train_dataset.vocab,100,[(2,500),(3,500),(4,500)])
 #print(len(train_dataset))
