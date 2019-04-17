@@ -29,7 +29,7 @@ def match_all(model,loader):
 class Evaluator():
     def __init__(self,evaluate_file):
         self.eva_df =  pd.read_csv(evaluate_file)
-
+    #macro accuracy
     def evaluate_accuracy(self,preds,k=1):
         def accuracy_at_k(g):
             gdf = g.head(k)
@@ -40,8 +40,11 @@ class Evaluator():
             #print(set(edf['ans_id'].values))
             #print(len(_)/n)
             return len(_)/k
-        #print(preds)
-        preds.groupby(['question_id']).apply(accuracy_at_k)      
+        accu = preds.groupby(['question_id']).apply(accuracy_at_k).reset_index(name='accu')    
+        m = accu['accu'].mean()
+        print(m)
+        return m
+
 
 def cosine_similarity(q_vectors,a_vectors):
     return F.cosine_similarity(q_vectors,a_vectors,1)

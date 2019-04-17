@@ -1,5 +1,5 @@
 
-from eval import cosine_similarity,embedding_loss
+from eval import cosine_similarity,embedding_loss,match_all
 import torch
 import pandas as pd
 
@@ -22,7 +22,7 @@ import pandas as pd
 
 
 class MatchLearner():
-    def __init__(self,model,optmizer,metric,validate_every,save_every):
+    def __init__(self,model,optmizer,metric,validate_every=5,save_every=5):
         self.model = model
         self.optm = optmizer
 
@@ -37,13 +37,14 @@ class MatchLearner():
             sim = cosine_similarity(qv,av)
 
 
-    def train(self,train_loader,validate_loader,max_epoch):
+    def train(self,train_loader,validate_loader,evaluator,max_epoch=100):
         best_model = None
         best_accu = 0.0
         for epoch in range(max_epoch):
             loss_tot = 0.0
             print('epoch %d'%(epoch))
             for i,batch in enumerate(train_loader):
+                self.optm.zero_grad()
                 qv = self.model.forward_question(batch['q'])
                 pav = self.model.forward_answer(batch['pos_ans'])
                 nav = self.model.forward_answer(batch['neg_ans'])
@@ -55,7 +56,9 @@ class MatchLearner():
                 self.optm.step()
 
             if epoch % self.validate_every == 0:
-                pass
+                pred = match_all(self.model,validate_loader)
+                evaluator.evaluate_accuracy(pred)
+                
             if epoch % self.save_every == 0 :
                 pass
 
