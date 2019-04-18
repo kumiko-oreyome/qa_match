@@ -15,8 +15,6 @@ class Checkpoint():
         self.vocab = vocab
         self.first_save = True
         self.vocab_path = '%s/vocab'%(self.dirpath)
-
-
         print('checkpont: %s'%(dirpath))
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
@@ -47,9 +45,7 @@ class MatchLearner():
  
 
     def train(self,train_loader,validate_loader,ckpt,evaluator,max_epoch=100,validate_every=5,save_every=5):
-        best_epoch = 0
         best_accu = 0.0
-        dirty_flag = False
         for epoch in range(max_epoch):
             loss_tot = 0.0
             cnt = 0
@@ -71,16 +67,13 @@ class MatchLearner():
             if epoch % validate_every == 0:
                 print('validate')
                 pred = match_all(self.model,validate_loader)
+                print(pred)
                 accu = evaluator.evaluate_accuracy(pred)
                 print('accuracy : %.3f'%(accu))
                 if accu > best_accu:
                     best_accu = accu
-                    best_epoch = epoch
-                    dirty_flag = True
+                    ckpt.save('best',epoch=epoch)
                     
 
             if epoch % save_every == 0 :
                ckpt.save(str(epoch),epoch=epoch)
-               if dirty_flag:
-                   ckpt.save('best',epoch=best_epoch)
-                   dirty_flag = False

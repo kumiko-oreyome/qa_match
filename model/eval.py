@@ -42,7 +42,6 @@ class Evaluator():
             return len(_)/k
         accu = preds.groupby(['question_id']).apply(accuracy_at_k).reset_index(name='accu')    
         m = accu['accu'].mean()
-        print(m)
         return m
 
 
