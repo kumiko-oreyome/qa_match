@@ -13,14 +13,6 @@ import  pickle as pkl
 
 
 
-
-
-
-#def generate_evaluate_file(question_file,answer_file,answer_num_every_question):
-#    question_df = pd.read_csv(question_file).set_index('question_id')
-#    answer_df = pd.read_csv(answer_file).set_index('ans_id')   
-
-
 def generate_fake_evaluate_file(question_file,answer_file,candidate_file,out_file,answer_num_every_question=10):
     #question_df = pd.read_csv(question_file).set_index('question_id')
     answer_df = pd.read_csv(answer_file).set_index('ans_id')
@@ -38,9 +30,19 @@ def generate_fake_evaluate_file(question_file,answer_file,candidate_file,out_fil
             b = [(qid,neg_id,0) for neg_id in neg_ans_ids]
             writer.writerows(a+b)
 
-# EADGBE
-# ADGCEA
-# DAGCFAD   
+
+def generate_subsample_candidate_file(candidate_file,out_file,sample_num):
+    df = pd.read_csv(candidate_file)
+    n = len(df)
+    sub_df = None
+    if sample_num >= n :
+        sub_df = df
+    else:
+        idxs = random.choices(range(n),k=sample_num)
+        sub_df = df.iloc[idxs,:]
+    sub_df.to_csv(out_file,index=False)
+    
+
 
 class Text():
     def __init__(self,text,max_len,tokenizer=list):
@@ -177,88 +179,5 @@ class QAMatchDataset(Dataset):
         return {'q':  self._text2array(q),'pos_ans': self._text2array(pa),'neg_ans':self._text2array(na)}
         
 
-
-
-
-
-# generate_fake_evaluate_file('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_candidates.txt','./data/cMedQA2/small_fake_eval.csv')
-
-
-
-
-
-
-
-#train_dataset = QAMatchDataset('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_candidates.txt')
-#dataloader = DataLoader(train_dataset, batch_size=32,shuffle=False)
-#simplecnn = SimpleCNN(train_dataset.vocab,100,[(2,500),(3,500),(4,500)])
-#print(len(train_dataset))
-#for batch in dataloader:
-#    o = simplecnn.forward_question(batch['q'])
-#    print(o.size())
-
-#vocab = train_dataset.vocab
-#eval_dataset = QAEvaluateDataset('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_fake_eval.csv',vocab)
-#d = eval_dataset[0]
-#print(vocab.decode(d['q']))
-#print(vocab.decode(d['ans']))
-#print(d['label'])
-#print(d['question_id'])
-
-
-#vocab = train_dataset.vocab
-#eval_dataset = QAEvaluateDataset('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_fake_eval.csv',vocab)
-#dataloader = DataLoader(eval_dataset, batch_size=32,shuffle=False)
-#for batch in dataloader:
-#    print(batch['q'][0])
-#    print(batch['label'])
-#    print(batch['question_id'][0])
-#    break
-
-
-#dataloader = DataLoader(eval_dataset, batch_size=32,shuffle=False)
-#for batch in dataloader:
-#    print(batch[''])
-
-#train_dataset = QAMatchDataset('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_candidates.txt')
-#
-#
-#d = train_dataset[0]
-#print(train_dataset.vocab.decode(d['q']))
-#print(train_dataset.vocab.decode(d['pos_ans']))
-#print(train_dataset.vocab.decode(d['neg_ans']))
-#d = train_dataset[1]
-#print(train_dataset.vocab.decode(d['q']))
-#print(train_dataset.vocab.decode(d['pos_ans']))
-#print(train_dataset.vocab.decode(d['neg_ans']))
-#
-#
-#
-
-
-#def merge_cmed2_qa_files(question_file,answer_file):
-#    question_df = pd.read_csv(question_file).set_index('question_id')
-#    answer_df = pd.read_csv(answer_file).set_index('question_id')
-#    joined_df = question_df.join(answer_df,lsuffix='_question',rsuffix='_answer')
-#    return joined_df
-#
-#
-#
-#
-#
-#
-#def generate_cmed2_examples(question_file,answer_file,sample_file,out_file):
-#    question_df = pd.read_csv(question_file).set_index('question_id')
-#    answer_df = pd.read_csv(answer_file).set_index('ans_id')
-#    candidates_df = pd.read_csv(sample_file)
-#    with open(out_file,'w',encoding='utf-8') as f:
-#        for _,row in candidates_df.iterrows():
-#            q = question_df.loc[row['question_id'],'content']
-#            pa = answer_df.loc[row['pos_ans_id'],'content']
-#            na = answer_df.loc[row['neg_ans_id'],'content']
-#            s = json.dumps({'question':q,'pos_ans':pa,'neg_ans':na},ensure_ascii=False)
-#            f.write(s+'\n')
-#
-#
-#
-#generate_cmed2_examples('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/train_candidates.txt','cemd2_train.jl')
+#generate_fake_evaluate_file('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_candidates.txt','./data/cMedQA2/small_fake_eval.csv')
+#generate_subsample_candidate_file('./data/cMedQA2/train_candidates.txt','./data/cMedQA2/train_50000.txt',50000)
