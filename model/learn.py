@@ -67,7 +67,6 @@ class MatchLearner():
             if epoch % validate_every == 0:
                 print('validate')
                 pred = match_all(self.model,validate_loader)
-                print(pred)
                 accu = evaluator.evaluate_accuracy(pred)
                 print('accuracy : %.3f'%(accu))
                 if accu > best_accu:
