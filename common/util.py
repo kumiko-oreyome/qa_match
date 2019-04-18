@@ -10,5 +10,10 @@ def get_batch_of_device(batch,device):
         assert False
 
 def get_device():
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if torch.cuda.is_available():
+        print('using cuda device')
+        device = torch.device('cuda')
+    else:
+        print('using cpu')
+        device = torch.device('cpu')
     return device
