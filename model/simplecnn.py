@@ -19,7 +19,6 @@ class SimpleCNN(nn.Module):
             conv = nn.Conv2d(1, kernel_number, ( kernel_size,emb_dim))
             self.conv_layers.append(conv)
 
-
     def get_hypers(self):
         return {'emb_dim':self.emb_dim,'kernel_sizes':self.kernel_sizes}
 

@@ -1,14 +1,15 @@
 import torch.nn.functional as F
 import torch
 import pandas as pd
+from common.util import get_batch_of_device
 
 
-
-def match_all(model,loader):
+def match_all(model,loader,device):
     qids = []
     ans_ids = []
     sim_list = []
     for batch in loader:
+        batch =  get_batch_of_device(batch,device)
         qv = model.forward_question(batch['q'])
         av = model.forward_answer(batch['ans'])
         qv = qv.detach()
@@ -20,8 +21,11 @@ def match_all(model,loader):
     sim_t = torch.cat(sim_list,0)
     qid_t = torch.cat(qids,0)
     ans_t = torch.cat(ans_ids,0)
-    
-    d = {'question_id':qid_t.numpy(),'ans_id':ans_t.numpy(),'sim':sim_t.numpy()}
+
+    if sim_t.is_cuda:
+        d =  {'question_id':qid_t.cpu().numpy(),'ans_id':ans_t.cpu().numpy(),'sim':sim_t.cpu().numpy()}
+    else:
+        d = {'question_id':qid_t.numpy(),'ans_id':ans_t.numpy(),'sim':sim_t.numpy()}
     df = pd.DataFrame(data=d)
     df = df.groupby(["question_id"]).apply(lambda x: x.sort_values(["sim"], ascending = False)).reset_index(drop=True)
     return df

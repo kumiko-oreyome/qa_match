@@ -176,7 +176,11 @@ class QAMatchDataset(Dataset):
         q,pa,na = self._get_items_from_sample_row(row)
         return {'q':  self._text2array(q),'pos_ans': self._text2array(pa),'neg_ans':self._text2array(na)}
         
-   
+
+
+
+
+
 # generate_fake_evaluate_file('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_candidates.txt','./data/cMedQA2/small_fake_eval.csv')
 
 

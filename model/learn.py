@@ -4,7 +4,7 @@ import torch
 import pandas as pd
 from common.datautil import Vocab
 import os
-
+from common.util import get_batch_of_device
 
 
 
@@ -37,14 +37,16 @@ class Checkpoint():
         self.model  = model_cls(vocab=self.vocab,**checkpoint['model_hyper']) 
         self.model.load_state_dict(checkpoint['model'])
 
+
+
+
     
 class MatchLearner():
-    def __init__(self,model,optmizer):
+    def __init__(self,model,optmizer,device):
         self.model = model
         self.optm = optmizer
- 
-
-    def train(self,train_loader,validate_loader,ckpt,evaluator,max_epoch=100,validate_every=5,save_every=5):
+        self.device = device
+    def train(self,train_loader,validate_loader,ckpt,evaluator,device,max_epoch=100,validate_every=5,save_every=5):
         best_accu = 0.0
         for epoch in range(max_epoch):
             loss_tot = 0.0
@@ -52,6 +54,7 @@ class MatchLearner():
             print('epoch %d'%(epoch))
             for i,batch in enumerate(train_loader):
                 self.optm.zero_grad()
+                batch = get_batch_of_device(batch,self.device)
                 qv = self.model.forward_question(batch['q'])
                 pav = self.model.forward_answer(batch['pos_ans'])
                 nav = self.model.forward_answer(batch['neg_ans'])
@@ -66,7 +69,7 @@ class MatchLearner():
 
             if epoch % validate_every == 0:
                 print('validate')
-                pred = match_all(self.model,validate_loader)
+                pred = match_all(self.model,validate_loader,device=self.device)
                 accu = evaluator.evaluate_accuracy(pred)
                 print('accuracy : %.3f'%(accu))
                 if accu > best_accu:
