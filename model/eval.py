@@ -78,7 +78,9 @@ class Evaluator():
 
 
 def cosine_similarity(q_vectors,a_vectors):
-    return F.cosine_similarity(q_vectors,a_vectors,1)
+    a = torch.sum(q_vectors*a_vectors,dim=1)
+    b = torch.norm(q_vectors,dim=1)*torch.norm(a_vectors,dim=1)
+    return a/(b+1e-8)
 
 
 def embedding_loss(pos_sims,neg_sims,M=0.2):
@@ -93,3 +95,6 @@ def embedding_loss(pos_sims,neg_sims,M=0.2):
 def accuracy(prediction,ground_truth,k=1):
     pred_k = prediction[0:k]
     return len(set(pred_k)&set(ground_truth))/k
+
+
+#print(cosine_similarity(torch.tensor([[1.0,2.0,2.0],[1.0,0.0,0.0]]),torch.tensor([[2.0,0.0,0.0],[5.0,0.0,0.0]])))
