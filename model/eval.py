@@ -2,7 +2,35 @@ import torch.nn.functional as F
 import torch
 import pandas as pd
 from common.util import get_batch_of_device
-
+from torch.utils.data import DataLoader
+import numpy as np
+def pairwise_match_question(question,answers,model,vocab,max_sentence_len,device,tokenizer=list,batch_size=32):
+    from  common.datautil import  TextDataset
+    n = len(answers)
+    qds = TextDataset([question]*n,vocab,max_sentence_len,tokenizer)
+    ans_ds = TextDataset(answers,vocab,max_sentence_len,tokenizer)
+    q_dl = DataLoader(qds , batch_size=batch_size,shuffle=False)
+    ans_dl = DataLoader(ans_ds , batch_size=batch_size,shuffle=False)
+    sim_list = []
+    for batch_q,batch_ans in zip(q_dl,ans_dl):
+        batch_q =  get_batch_of_device(batch_q,device)
+        batch_ans =  get_batch_of_device(batch_ans,device)
+        qv = model.forward_question(batch_q)
+        av = model.forward_answer(batch_ans )      
+        qv = qv.detach()
+        av = av.detach()
+        sim = cosine_similarity(qv,av)
+        sim_list.append(sim)
+    sim_t = torch.cat(sim_list,0)
+    print(sim_t)
+    _,sort_idx = torch.sort(sim_t,descending=True)
+    if sim_t.is_cuda:
+        sim_t = sim_t.cpu().numpy()
+        sort_idx = sort_idx.cpu().numpy()
+    np_answers = np.array(answers)
+    np_answers = np_answers[sort_idx].tolist()
+    sim_t = sim_t[sort_idx].tolist()
+    return list(zip(np_answers,sim_t))
 
 def match_all(model,loader,device):
     qids = []
@@ -58,12 +86,6 @@ def embedding_loss(pos_sims,neg_sims,M=0.2):
     _loss = torch.clamp(diff, min=0)
     return torch.mean(_loss)
 
-
-
-
-#def evalauate_accuracy_on_batch(batch_q,batch_ans,batch_label):
-#    pass
-    
 
 
 

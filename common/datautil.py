@@ -41,7 +41,15 @@ def generate_subsample_candidate_file(candidate_file,out_file,sample_num):
         idxs = random.choices(range(n),k=sample_num)
         sub_df = df.iloc[idxs,:]
     sub_df.to_csv(out_file,index=False)
-    
+
+def text2array(text,max_sentence_len,vocab,tokenizer):
+    return Text(text,max_sentence_len,tokenizer).to_numpy(vocab)  
+
+
+
+class DatasetMeta():
+    def __init__(self):
+        pass
 
 
 class Text():
@@ -60,7 +68,7 @@ class Text():
         ixs = vocab.encode(tokens)
         return ixs + [vocab._encode_one(vocab.PAD)] * (self.max_len-len(ixs))
 
-    def to_tensor(self,vocab):
+    def to_numpy(self,vocab):
         return np.array(self.numerize(vocab),dtype=np.int64)
 
 class Vocab():
@@ -112,7 +120,23 @@ class Vocab():
     def load(cls,path):
         with open(path,'rb') as f:
             return pkl.load(f)
-        
+
+
+
+class TextDataset(Dataset):
+    def __init__(self,texts,vocab,max_sentence_len=100,tokenizer=list,device=None):
+        self.texts = texts
+        self.max_sentence_len = max_sentence_len
+        self.tokenizer = tokenizer
+        self.vocab = vocab
+        self.device = device
+        self.max_sentence_len = max_sentence_len
+
+    def __len__(self):
+        return len(self.texts)
+    
+    def __getitem__(self, idx):
+        return text2array(self.texts[idx],self.max_sentence_len,self.vocab,self.tokenizer)
     
 
 class QAEvaluateDataset(Dataset):
@@ -134,7 +158,7 @@ class QAEvaluateDataset(Dataset):
         return q,a,row['label'],row['question_id'],row['ans_id']
 
     def _text2array(self,s):
-        return Text(s,self.max_sentence_len,self.tokenizer).to_tensor(self.vocab)
+        return text2array(s,self.max_sentence_len,self.vocab,self.tokenizer)
 
     def __getitem__(self, idx):
         row = self.sample_df.iloc[idx]
@@ -172,7 +196,7 @@ class QAMatchDataset(Dataset):
     def __len__(self):
         return len(self.sample_df)
     def _text2array(self,s):
-        return Text(s,self.max_sentence_len,self.tokenizer).to_tensor(self.vocab)
+        return text2array(s,self.max_sentence_len,self.vocab,self.tokenizer)
     def __getitem__(self, idx):
         row = self.sample_df.iloc[idx]
         q,pa,na = self._get_items_from_sample_row(row)

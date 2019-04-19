@@ -13,7 +13,6 @@ def parse_kernel_args(s):
         ks,kn = ss.split(":")
         l.append((int(ks),int(kn)))
     return l
-#if torch.cuda.is_available():
 
 
 parser = ArgumentParser()
