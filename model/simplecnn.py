@@ -15,7 +15,7 @@ class SimpleCNN(nn.Module):
         self.emb = nn.Embedding(vocab.size(),emb_dim, padding_idx=vocab._encode_one(vocab.PAD))
         nn.init.uniform_(self.emb.weight, -0.001, 0.001)
 
-        #self.conv_actv = nn.ReLU()
+        self.conv_actv = nn.ReLU()
 
         self.conv_layers =  nn.ModuleList()
         for kernel_size,kernel_number in kernel_sizes:
@@ -44,7 +44,7 @@ class SimpleCNN(nn.Module):
             ks = kernel_map.size()
             # (N,kernel_num,H)
             kernel_map  = kernel_map.squeeze(3)
-            #kernel_map  = self.conv_actv(kernel_map)
+            kernel_map  = self.conv_actv(kernel_map)
             # N * kernel_num 
             out = F.max_pool1d(kernel_map, kernel_map.size(2)).squeeze(2)
             kernel_maps.append(out)

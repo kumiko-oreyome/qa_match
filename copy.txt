@@ -1,36 +1,6 @@
-python  -m scripts.simplecnn.train ./data/cMedQA2/question.csv ./data/cMedQA2/answer.csv ./data/cMedQA2/small_candidates.txt ./data/cMedQA2/small_fake_eval.csv ./checkpoints/small
+python  -m scripts.simplecnn.train ./data/cMedQA2/question.csv ./data/cMedQA2/answer.csv ./data/cMedQA2/small_candidates.txt ./data/cMedQA2/small_fake_eval.csv ./checkpoints/small --epoch-num=15
 
 python  -m scripts.simplecnn.eval ./data/cMedQA2/question.csv ./data/cMedQA2/answer.csv ./data/cMedQA2/small_fake_eval.csv ./checkpoints/small
 
 
-    ans_id  question_id       sim
-0   157314     11995968  0.995503
-1    46850     11995968  0.990556
-2   157315     11995968  0.982012
-3   157313     11995968  0.971886
-4    68782     11995968  0.490369
-5   219969     11995968  0.487539
-6   203803     11995968  0.486298
-7   137642     11995968  0.484200
-8      318     11995968  0.479417
-9   215385     11995968  0.458304
-10   11064     24731702  0.996483
-11   90793     24731702  0.996121
-12   11063     24731702  0.853079
-13  199315     24731702  0.562748
-14   96573     24731702  0.551034
-15  131981     24731702  0.530191
-16  206089     24731702  0.457746
-17   22844     24731702  0.457426
-18  149226     24731702  0.455343
-19   83748     24731702  0.454856
-20  176594     48539424  0.995655
-21  217756     48539424  0.983751
-22  213323     48539424  0.617230
-23  204324     48539424  0.555946
-24  174651     48539424  0.547934
-25  147393     48539424  0.546833
-26    2835     48539424  0.546820
-27  138787     48539424  0.545400
-28   62836     48539424  0.539609
-29  214032     48539424  0.474060
+python -m scripts.simplecnn.demo
