@@ -53,6 +53,8 @@ class MatchLearner():
             cnt = 0
             print('epoch %d'%(epoch))
             for i,batch in enumerate(train_loader):
+                if i % 5000 == 0:
+                    print('iteration %d'%(i))
                 self.optm.zero_grad()
                 batch = get_batch_of_device(batch,self.device)
                 qv = self.model.forward_question(batch['q'])
