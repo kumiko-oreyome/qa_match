@@ -6,41 +6,16 @@ import numpy as np
 from model.simplecnn import SimpleCNN
 import torch
 import random
-import csv
 from  model.eval import  accuracy,match_all
 import  pickle as pkl
 
 
+class DatasetMeta():
+    def __init__(self,vocab,device=None,sentence_max_len=100,tokenizer=list):
+        pass
+        
 
 
-def generate_fake_evaluate_file(question_file,answer_file,candidate_file,out_file,answer_num_every_question=10):
-    #question_df = pd.read_csv(question_file).set_index('question_id')
-    answer_df = pd.read_csv(answer_file).set_index('ans_id')
-    candidate_df = pd.read_csv(candidate_file).set_index('question_id')
-    trained_question_id = set(candidate_df.index.tolist())
-    with open(out_file, 'w',encoding='utf-8',newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(["question_id","ans_id","label"]) #header
-        for qid in trained_question_id:
-            pos_ans_ids = answer_df.loc[answer_df['question_id']==qid].index.tolist()
-            neg_ans_ids = answer_df.loc[answer_df['question_id']!=qid].index.tolist()
-            neg_num = answer_num_every_question - len(pos_ans_ids)
-            neg_ans_ids = random.choices(neg_ans_ids,k=neg_num)
-            a = [(qid,pos_id,1) for pos_id in pos_ans_ids]
-            b = [(qid,neg_id,0) for neg_id in neg_ans_ids]
-            writer.writerows(a+b)
-
-
-def generate_subsample_candidate_file(candidate_file,out_file,sample_num):
-    df = pd.read_csv(candidate_file)
-    n = len(df)
-    sub_df = None
-    if sample_num >= n :
-        sub_df = df
-    else:
-        idxs = random.choices(range(n),k=sample_num)
-        sub_df = df.iloc[idxs,:]
-    sub_df.to_csv(out_file,index=False)
 
 def text2array(text,max_sentence_len,vocab,tokenizer):
     return Text(text,max_sentence_len,tokenizer).to_numpy(vocab)  
@@ -203,5 +178,3 @@ class QAMatchDataset(Dataset):
         return {'q':  self._text2array(q),'pos_ans': self._text2array(pa),'neg_ans':self._text2array(na)}
         
 
-#generate_fake_evaluate_file('./data/cMedQA2/question.csv','./data/cMedQA2/answer.csv','./data/cMedQA2/small_candidates.txt','./data/cMedQA2/small_fake_eval.csv')
-#generate_subsample_candidate_file('./data/cMedQA2/train_candidates.txt','./data/cMedQA2/train_50000.txt',50000)

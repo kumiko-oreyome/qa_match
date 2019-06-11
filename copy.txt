@@ -3,4 +3,14 @@ python  -m scripts.simplecnn.train ./data/cMedQA2/question.csv ./data/cMedQA2/an
 python  -m scripts.simplecnn.eval ./data/cMedQA2/question.csv ./data/cMedQA2/answer.csv ./data/cMedQA2/small_fake_eval.csv ./checkpoints/small
 
 
-python -m scripts.simplecnn.demo
+python  -m scripts.simplecnn.eval ./data/app/food87_question_delete_no_answer.csv ./data/app/food87_answer_delete_no_answer.csv ./data/app/food87_eval_delete_no_answer.csv ./checkpoints/default_simple_all  
+(55% precision@1)
+
+python -m scripts.simplecnn.demo ./data/app/food87_answer_delete_no_answer.csv
+
+python   -u -m  scripts.simplecnn.train  ./data/cMedQA2/question.csv ./data/cMedQA2/answer.csv ./data/cMedQA2/train_candidates.txt  ./data/cMedQA2/dev_candidates.txt  ./checkpoints/default_simple_all | tee outall.txt
+
+python  -m scripts.simplecnn.eval ./data/twe/twe_question.csv  ./data/twe/twe_answer.csv ./data/twe/twe_eval.csv ./checkpoints/default_simple_all
+(48% precision@1)
+
+python -m scripts.simplecnn.demo ./data/twe/twe_answer.csv

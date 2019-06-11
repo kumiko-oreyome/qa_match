@@ -31,6 +31,7 @@ eval_dataset = QAEvaluateDataset(args.question_file,args.answer_file,args.eval_f
 eval_loader = DataLoader(eval_dataset , batch_size=args.batch_size,shuffle=False)
 
 d = match_all(simplecnn,eval_loader,device)
-accu = Evaluator(args.eval_file).evaluate_accuracy(d)
-print(d)
-print('accuracy of %s is %.3f'%(args.eval_file,accu))
+for k in range(5):
+    #accu = Evaluator(args.eval_file).evaluate_accuracy(d,k+1)
+    accu = Evaluator(args.eval_file).evaluate_hitrate(d,k+1)
+    print('accuracy %d of %s is %.3f'%(k+1,args.eval_file,accu))

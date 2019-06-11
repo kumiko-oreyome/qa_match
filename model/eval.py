@@ -4,7 +4,10 @@ import pandas as pd
 from common.util import get_batch_of_device
 from torch.utils.data import DataLoader
 import numpy as np
-def pairwise_match_question(question,answers,model,vocab,max_sentence_len,device,tokenizer=list,batch_size=32):
+
+
+
+def pairwise_match_question(question,answers,model,vocab,max_sentence_len,device,optional_fields=[],tokenizer=list,batch_size=32):
     from  common.datautil import  TextDataset
     n = len(answers)
     qds = TextDataset([question]*n,vocab,max_sentence_len,tokenizer)
@@ -22,15 +25,16 @@ def pairwise_match_question(question,answers,model,vocab,max_sentence_len,device
         sim = cosine_similarity(qv,av)
         sim_list.append(sim)
     sim_t = torch.cat(sim_list,0)
-    print(sim_t)
     _,sort_idx = torch.sort(sim_t,descending=True)
     if sim_t.is_cuda:
         sim_t = sim_t.cpu().numpy()
         sort_idx = sort_idx.cpu().numpy()
-    np_answers = np.array(answers)
-    np_answers = np_answers[sort_idx].tolist()
-    sim_t = sim_t[sort_idx].tolist()
-    return list(zip(np_answers,sim_t))
+    if len(optional_fields) == 0 :
+        return list(zip(np.array(answers)[sort_idx].tolist(),sim_t[ sort_idx].tolist()))
+    else:
+        return list(zip( *((np.array(answers)[sort_idx].tolist(),sim_t[sort_idx].tolist())+\
+                     tuple([ np.array(field)[sort_idx].tolist() for field in optional_fields ]))))
+                    
 
 def match_all(model,loader,device):
     qids = []
@@ -73,6 +77,19 @@ class Evaluator():
             #print(len(_)/n)
             return len(_)/k
         accu = preds.groupby(['question_id']).apply(accuracy_at_k).reset_index(name='accu')    
+        m = accu['accu'].mean()
+        return m
+    #macro hitrate
+    def evaluate_hitrate(self,preds,k=1):
+        def hit_at_k(g):
+            gdf = g.head(k)
+            qid = g['question_id'].values[0]
+            edf = self.eva_df.loc[(self.eva_df['question_id']==qid) & (self.eva_df['label']==1)]
+            _ = set(gdf['ans_id'].values)&set(edf['ans_id'].values)
+            if len(_)>0:
+                return 1.0
+            return 0.0
+        accu = preds.groupby(['question_id']).apply(hit_at_k).reset_index(name='accu')    
         m = accu['accu'].mean()
         return m
 
