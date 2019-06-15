@@ -142,6 +142,23 @@ class QAEvaluateDataset(Dataset):
                 ,'question_id':np.array(int(question_id),dtype=np.int64),'ans_id':np.array(int(ans_id),dtype=np.int64)}
 
 
+class QADataset():
+    def __init__(self,question_file,answer_file):
+        self.question_df = pd.read_csv(question_file).rename({'content':'question'}, axis='columns')
+        self.answer_df = pd.read_csv(answer_file).rename({'content':'answer'}, axis='columns')
+        self._merge_question_answer_df()
+    def _merge_question_answer_df(self):
+        self.merged_df = self.question_df.set_index('question_id').join(self.answer_df.set_index('question_id'))
+    def get_qa(self,question_id):
+        q,a = self.answer_df.loc[question_id,'question'],self.answer_df.loc[question_id,'answer']
+        return q,a
+    def get_df(self):
+        return  self.merged_df
+
+
+
+
+
 class QAMatchDataset(Dataset):
     def __init__(self,question_file,answer_file,sample_file,vocab=None,max_sentence_len=100,tokenizer=list,device=None):
         self.question_df = pd.read_csv(question_file).set_index('question_id')

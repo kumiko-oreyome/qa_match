@@ -36,6 +36,9 @@ def pairwise_match_question(question,answers,model,vocab,max_sentence_len,device
                      tuple([ np.array(field)[sort_idx].tolist() for field in optional_fields ]))))
                     
 
+def rank_pred_by_sim(df):
+    return   df.groupby(["question_id"]).apply(lambda x: x.sort_values(["sim"], ascending = False)).reset_index(drop=True)
+
 def match_all(model,loader,device):
     qids = []
     ans_ids = []
@@ -59,7 +62,7 @@ def match_all(model,loader,device):
     else:
         d = {'question_id':qid_t.numpy(),'ans_id':ans_t.numpy(),'sim':sim_t.numpy()}
     df = pd.DataFrame(data=d)
-    df = df.groupby(["question_id"]).apply(lambda x: x.sort_values(["sim"], ascending = False)).reset_index(drop=True)
+    df = rank_pred_by_sim(df)
     return df
 
 class Evaluator():

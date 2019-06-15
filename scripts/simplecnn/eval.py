@@ -1,7 +1,7 @@
 
 from model.learn import Checkpoint
 from model.simplecnn import SimpleCNN
-from  model.eval import  match_all,Evaluator,match_all
+from  model.eval import  match_all,Evaluator
 from common.datautil import QAEvaluateDataset
 from argparse import ArgumentParser
 from torch.utils.data import Dataset,DataLoader
