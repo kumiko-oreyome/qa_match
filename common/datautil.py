@@ -148,7 +148,7 @@ class QADataset():
         self.answer_df = pd.read_csv(answer_file).rename({'content':'answer'}, axis='columns')
         self._merge_question_answer_df()
     def _merge_question_answer_df(self):
-        self.merged_df = self.question_df.set_index('question_id').join(self.answer_df.set_index('question_id'))
+        self.merged_df = self.question_df.set_index('question_id').join(self.answer_df.set_index('question_id')).reset_index()
     def get_qa(self,question_id):
         q,a = self.answer_df.loc[question_id,'question'],self.answer_df.loc[question_id,'answer']
         return q,a
@@ -193,5 +193,3 @@ class QAMatchDataset(Dataset):
         row = self.sample_df.iloc[idx]
         q,pa,na = self._get_items_from_sample_row(row)
         return {'q':  self._text2array(q),'pos_ans': self._text2array(pa),'neg_ans':self._text2array(na)}
-        
-

@@ -27,7 +27,13 @@ def read_json_utf8(path):
 def write_json_utf8(path,obj):
     with open(path,'w',encoding="utf-8") as f:
         json.dump(obj,f,ensure_ascii=False)
-
+        
+def generate_ngram(sentence,n):
+    assert n > 0
+    l = []
+    for i in range(len(sentence)-n+1):
+        l.append(sentence[i:i+n])
+    return l
 
 class Tokenizer():
     def __init__(self,stopword_path='stopwords.txt'):
@@ -50,3 +56,5 @@ class Tfidf():
         return self.count_vectorizer.transform(self.make_corpus(sentences)).toarray()
     def tfidf_transform(self,sentences):
         return self.tfidf_transformer.transform(self.count_transform(sentences))
+
+
