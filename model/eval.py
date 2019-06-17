@@ -103,9 +103,11 @@ def cosine_similarity(q_vectors,a_vectors):
     return a/(b+1e-8)
 
 
-def embedding_loss(pos_sims,neg_sims,M=0.2):
+def embedding_loss(pos_sims,neg_sims,M=0.2,weights=None):
     diff = M-pos_sims+neg_sims
     _loss = torch.clamp(diff, min=0)
+    if weights is not None:
+        _loss = _loss*weights
     return torch.mean(_loss)
 
 
