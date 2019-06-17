@@ -62,7 +62,7 @@ class MatchLearner():
                 nav = self.model.forward_answer(batch['neg_ans'])
                 sim_p = cosine_similarity(qv,pav)
                 sim_n = cosine_similarity(qv,nav)
-                loss = embedding_loss(sim_p,sim_n)
+                loss = embedding_loss(sim_p,sim_n,weights=batch['sample_weight'].float())
                 loss.backward()
                 self.optm.step()
                 loss_tot+=loss
@@ -76,8 +76,9 @@ class MatchLearner():
                 print('accuracy : %.3f'%(accu))
                 if accu > best_accu:
                     best_accu = accu
-                    ckpt.save('best',epoch=epoch)
+                    if ckpt is not None:
+                        ckpt.save('best',epoch=epoch)
                     
 
-            if epoch % save_every == 0 :
+            if epoch % save_every == 0 and ckpt is not None:
                ckpt.save(str(epoch),epoch=epoch)
