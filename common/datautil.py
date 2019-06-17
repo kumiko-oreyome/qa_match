@@ -8,7 +8,7 @@ import torch
 import random
 from  model.eval import  accuracy,match_all
 import  pickle as pkl
-
+from model.preproccessing import calculate_overlap_ngram_qa
 
 class DatasetMeta():
     def __init__(self,vocab,device=None,sentence_max_len=100,tokenizer=list):
@@ -21,10 +21,6 @@ def text2array(text,max_sentence_len,vocab,tokenizer):
     return Text(text,max_sentence_len,tokenizer).to_numpy(vocab)  
 
 
-
-class DatasetMeta():
-    def __init__(self):
-        pass
 
 
 class Text():
@@ -180,6 +176,13 @@ class QAMatchDataset(Dataset):
             vocab.add_tokens(self.tokenizer(pa))
             vocab.add_tokens(self.tokenizer(na))
         self.vocab = vocab
+
+    def _get_sample_weight(self,q,a):
+        ov = calculate_overlap_ngram_qa(q[0:self.max_sentence_len],a[0:self.max_sentence_len],(2,3))
+        n = len(ov)
+        n = max(1,min(5,n))
+        return float(n)
+        
     def _get_items_from_sample_row(self,row):
         q = self.question_df.loc[row['question_id'],'content']
         pa = self.answer_df.loc[row['pos_ans_id'],'content']
@@ -192,4 +195,4 @@ class QAMatchDataset(Dataset):
     def __getitem__(self, idx):
         row = self.sample_df.iloc[idx]
         q,pa,na = self._get_items_from_sample_row(row)
-        return {'q':  self._text2array(q),'pos_ans': self._text2array(pa),'neg_ans':self._text2array(na)}
+        return {'q':  self._text2array(q),'pos_ans': self._text2array(pa),'neg_ans':self._text2array(na),'sample_weight':self._get_sample_weight(q,na)}
